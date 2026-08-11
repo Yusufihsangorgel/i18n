@@ -633,6 +633,13 @@ class NumberFormat {
   static final _maxInt = 1 is double ? pow(2, 52) : 1.0e300.floor();
   static final _maxDigits = (log(_maxInt) / log(10)).ceil();
 
+  /// The largest `n` for which `pow(10, n)` is an exact integer.
+  ///
+  /// On the web `int` is a double, so powers of ten stay exact up to 10^15,
+  /// which is below 2^53. On other platforms `int` is 64 bits and 10^18 is the
+  /// last power of ten that fits.
+  static final _maxScalingDigits = 1 is double ? 15 : 18;
+
   /// Helpers to check numbers that don't conform to the [num] interface,
   /// e.g. Int64
   bool _isInfinite(dynamic number) => number is num ? number.isInfinite : false;
@@ -725,6 +732,9 @@ class NumberFormat {
 
     var power = 0;
     int digitMultiplier;
+    // Fraction digits we did not scale by because [power] would have
+    // overflowed. They are printed as trailing zeros.
+    var excessFractionDigits = 0;
 
     if (_isInfinite(number)) {
       integerPart = number.toInt();
@@ -808,7 +818,16 @@ class NumberFormat {
 
       computeFractionDigits();
 
-      power = pow(10, fractionDigits) as int;
+      // Scaling by 10^fractionDigits overflows the integer type once
+      // fractionDigits gets large, which used to turn the whole result into
+      // garbage. Scale by as much as fits and print the rest as zeros - a
+      // double holds no information out that far anyway.
+      var scalingDigits = min(
+        fractionDigits,
+        _maxScalingDigits - _multiplierDigits,
+      );
+      excessFractionDigits = fractionDigits - scalingDigits;
+      power = pow(10, scalingDigits) as int;
       digitMultiplier = power * multiplier;
 
       // Multiply out to the number of decimal places and the percent, then
@@ -860,7 +879,10 @@ class NumberFormat {
 
     _decimalSeparator(fractionPresent);
     if (fractionPresent) {
-      _formatFractionPart((fractionPart + power).toString(), minFractionDigits);
+      _formatFractionPart(
+        '${fractionPart + power}${'0' * excessFractionDigits}',
+        minFractionDigits,
+      );
     }
   }
 
