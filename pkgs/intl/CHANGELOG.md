@@ -1,6 +1,6 @@
 ## 0.20.4-wip
- * Fix `NumberFormat` printing unrelated digits when asked for more fraction
-   digits than the scaling factor can hold, fixes issue
+ * Fix `NumberFormat` printing unrelated digits for large
+   `maximumFractionDigits` values, fixes issue
    [#440](https://github.com/dart-lang/i18n/issues/440).
 
 ## 0.20.3
