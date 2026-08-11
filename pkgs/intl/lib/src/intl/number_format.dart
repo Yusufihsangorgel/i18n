@@ -636,11 +636,13 @@ class NumberFormat {
   /// The largest `n` for which `pow(10, n)` still works as a scaling factor.
   ///
   /// Where `int` is 64 bits, which includes dart2wasm as well as the VM,
-  /// `pow(10, 19)` wraps around to a negative number, so 18 is the last one
-  /// that fits. Where `int` is a double, as under dart2js, nothing wraps, but
-  /// `toString` switches to exponent notation at 10^21 and those characters
-  /// end up in the digits we print, so 20 is the last usable one.
-  static final _maxScalingDigits = 1 is double ? 20 : 18;
+  /// `pow(10, 19)` wraps around to a negative number, and the percent or
+  /// permille multiplier is folded into the factor before we multiply, so it
+  /// eats into the 18 that fit. Where `int` is a double, as under dart2js,
+  /// nothing wraps, but `toString` switches to exponent notation at 10^21 and
+  /// those characters end up in the digits we print, so the limit is 20 and
+  /// the multiplier does not count against it, since it is never printed.
+  int get _maxScalingDigits => 1 is double ? 20 : 18 - _multiplierDigits;
 
   /// Helpers to check numbers that don't conform to the [num] interface,
   /// e.g. Int64
@@ -820,15 +822,11 @@ class NumberFormat {
 
       computeFractionDigits();
 
-      // The scaling factor is 10^fractionDigits times the percent multiplier,
-      // and once fractionDigits gets large that stops being a usable integer,
-      // which used to turn the whole result into garbage. Scale by as much as
-      // fits and print the rest as zeros - a double holds no information out
-      // that far anyway.
-      var scalingDigits = min(
-        fractionDigits,
-        _maxScalingDigits - _multiplierDigits,
-      );
+      // Once fractionDigits gets large, 10^fractionDigits stops being a
+      // usable scaling factor, which used to turn the whole result into
+      // garbage. Scale by as much as fits and print the rest as zeros - a
+      // double holds no information out that far anyway.
+      var scalingDigits = min(fractionDigits, _maxScalingDigits);
       excessFractionDigits = fractionDigits - scalingDigits;
       power = pow(10, scalingDigits) as int;
       digitMultiplier = power * multiplier;
