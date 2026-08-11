@@ -1,7 +1,7 @@
 ## 0.20.4-wip
  * Fix `NumberFormat` printing unrelated digits when asked for more fraction
-   digits than the scaling factor can hold, e.g. 19 on the VM or 21 on the web,
-   fixes issue [#440](https://github.com/dart-lang/i18n/issues/440).
+   digits than the scaling factor can hold, fixes issue
+   [#440](https://github.com/dart-lang/i18n/issues/440).
 
 ## 0.20.3
  * Updated the Turkish Lira (TRY) currency symbol in `simpleCurrencySymbols`

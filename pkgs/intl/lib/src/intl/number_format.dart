@@ -635,9 +635,9 @@ class NumberFormat {
 
   /// The largest `n` for which `pow(10, n)` is an exact integer.
   ///
-  /// On the web `int` is a double, so powers of ten stay exact up to 10^15,
-  /// which is below 2^53. On other platforms `int` is 64 bits and 10^18 is the
-  /// last power of ten that fits.
+  /// Where `int` is a double, as under dart2js, powers of ten stay exact up to
+  /// 10^15, the last one below 2^53. Where `int` is 64 bits, which includes
+  /// dart2wasm as well as the VM, 10^18 is the last one that fits.
   static final _maxScalingDigits = 1 is double ? 15 : 18;
 
   /// Helpers to check numbers that don't conform to the [num] interface,
