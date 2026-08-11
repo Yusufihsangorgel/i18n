@@ -195,6 +195,38 @@ void runTests(Map<String, num> allTestNumbers) {
     }
   });
 
+  test('More fraction digits than the scaling factor can hold', () {
+    // Scaling by 10^fractionDigits used to leave the exact integer range, so
+    // the digits printed were whatever the inexact factor happened to produce.
+    // https://github.com/dart-lang/i18n/issues/440
+    for (var digits in [16, 17, 19, 21, 25, 40]) {
+      var f = NumberFormat.decimalPattern('en_US')
+        ..minimumFractionDigits = digits
+        ..maximumFractionDigits = digits;
+      expect(
+        f.format(0.1),
+        '0.${'1'.padRight(digits, '0')}',
+        reason: 'fractionDigits: $digits',
+      );
+      expect(
+        f.format(-123.5),
+        '-123.${'5'.padRight(digits, '0')}',
+        reason: 'fractionDigits: $digits',
+      );
+    }
+
+    // A pattern with more '#' than the scaling factor can hold, which is how
+    // the issue was originally reported.
+    expect(NumberFormat('#.${'#' * 40}', 'en_US').format(1), '1');
+
+    // The percent multiplier is folded into the scaling factor, so it eats
+    // into the digits available for scaling.
+    var percent = NumberFormat.percentPattern('en_US')
+      ..minimumFractionDigits = 19
+      ..maximumFractionDigits = 19;
+    expect(percent.format(0.001), '0.${'1'.padRight(19, '0')}%');
+  });
+
   test('Exponential form', () {
     var f = NumberFormat('#.###E0');
     for (var x in testExponential.keys) {

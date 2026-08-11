@@ -1,3 +1,8 @@
+## 0.20.4-wip
+ * Fix `NumberFormat` printing unrelated digits for large
+   `maximumFractionDigits` values, fixes issue
+   [#440](https://github.com/dart-lang/i18n/issues/440).
+
 ## 0.20.3
  * Updated the Turkish Lira (TRY) currency symbol in `simpleCurrencySymbols`
    from "TL" to "₺" (U+20BA). This ensures accuracy and alignment with the
