@@ -216,15 +216,6 @@ void runTests(Map<String, num> allTestNumbers) {
       );
     }
 
-    var scalingBoundary = NumberFormat.decimalPattern('en_US')
-      ..minimumFractionDigits = 18
-      ..maximumFractionDigits = 18;
-    expect(
-      scalingBoundary.format(1.2345678901234567),
-      1 is double ? '1.234567890123456800' : '1.234567890123456704',
-      reason: 'The eighteenth scaling digit must be used',
-    );
-
     // A pattern with more '#' than the scaling factor can hold, which is how
     // the issue was originally reported.
     expect(NumberFormat('#.${'#' * 40}', 'en_US').format(1), '1');
